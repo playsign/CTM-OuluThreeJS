@@ -28,7 +28,8 @@ var ouluClones = [];
 var debugMode = false;
 
 var useWorker;
-var perfRecord = false;
+var perfRecord = 0; //time remaining for this run
+var PERFDUR = 17;
 
 var controlsCar = {
 	moveForward: false,
@@ -411,8 +412,12 @@ function update() {
 	var delta = clock.getDelta(); // seconds.
 
         //hack for perf measurement
-        if (perfRecord === true) {
+        if (perfRecord > 0) {
 		controlsCar.moveForward = true;
+                perfRecord -= delta;
+                if (perfRecord <= 0) {
+                        stopPerf();
+                }
         }
 
 	if (flyMode === true) {
@@ -614,4 +619,20 @@ function hackMaterials(origMaterials) {
 	}
 	var etime = performance.now();
 	console.log("materials took", etime-stime, "ms");
+}
+
+//annotate timeline & start automove for perf test
+function startPerf() {
+        perfRecord = PERFDUR;
+        console.time("PerfRun START");
+        console.timeStamp("PerfRun stamp START");
+        console.log("PerfRun START");
+}
+
+function stopPerf() {
+        perfRecord = 0;
+	controlsCar.moveForward = false;
+        console.timeStamp("PerfRun stamp STOP");
+        console.timeEnd("PerfRun STOP");
+        console.log("PerfRun STOP");
 }
