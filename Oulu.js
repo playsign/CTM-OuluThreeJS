@@ -27,6 +27,7 @@ var ouluClones = [];
 // Debug draw colliders
 var debugMode = false;
 
+var perfRecord = false;
 
 var controlsCar = {
 	moveForward: false,
@@ -397,6 +398,11 @@ function setFlyMode(flying) {
 
 function update() {
 	var delta = clock.getDelta(); // seconds.
+
+        //hack for perf measurement
+        if (perfRecord === true) {
+		controlsCar.moveForward = true;
+        }
 
 	if (flyMode === true) {
 		flyControls.update(delta * 1000);
