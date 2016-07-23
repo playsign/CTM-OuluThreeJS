@@ -27,6 +27,9 @@ var ouluClones = [];
 // Debug draw colliders
 var debugMode = false;
 
+var useWorker;
+var perfRecord = 0; //time remaining for this run
+var PERFDUR = 17;
 
 var controlsCar = {
 	moveForward: false,
@@ -183,6 +186,16 @@ function init() {
 	};
 
 	car.loadPartsJSON("GreenCar.js", "GreenCar.js");
+
+        // for perf measurement: worker or not
+        var workerArg = location.search.split('worker=').splice(1).join('').split('&')[0]
+        if (workerArg === "false") {
+                useWorker = false;
+                console.log("disabled worker");
+        } else {
+                useWorker = true;
+                console.log("using worker");
+        }
 
 	// GRID
 	// gridManager.setTarget(car.root.position);
@@ -398,6 +411,15 @@ function setFlyMode(flying) {
 function update() {
 	var delta = clock.getDelta(); // seconds.
 
+        //hack for perf measurement
+        if (perfRecord > 0) {
+		controlsCar.moveForward = true;
+                perfRecord -= delta;
+                if (perfRecord <= 0) {
+                        stopPerf();
+                }
+        }
+
 	if (flyMode === true) {
 		flyControls.update(delta * 1000);
 	} else {
@@ -597,4 +619,20 @@ function hackMaterials(origMaterials) {
 	}
 	var etime = performance.now();
 	console.log("materials took", etime-stime, "ms");
+}
+
+//annotate timeline & start automove for perf test
+function startPerf() {
+        perfRecord = PERFDUR;
+        console.time("PerfRun START");
+        console.timeStamp("PerfRun stamp START");
+        console.log("PerfRun START");
+}
+
+function stopPerf() {
+        perfRecord = 0;
+	controlsCar.moveForward = false;
+        console.timeStamp("PerfRun stamp STOP");
+        console.timeEnd("PerfRun STOP");
+        console.log("PerfRun STOP");
 }
